@@ -1,6 +1,8 @@
 import { Button, Typography, Grid } from "@material-ui/core";
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";  
+import { useParams, useNavigate } from "react-router-dom"; 
+import props from 'prop-types'; 
+import CreateRoomPage from "./CreateRoomPage";
 
 
 export default function Room() {
@@ -8,43 +10,29 @@ export default function Room() {
     const[votesToSkip, setVotesToSkip] = useState(2);
     const[guestCanPause, setGuestCanPause] = useState(false);
     const[isHost, setIsHost] = useState(false);
+    const[showSettings, setShowSettings] = useState(false);
+
     
     const { roomCode } = useParams();
 
     let navigate = useNavigate();
-    /* const clearRoomCode = () => {
-        setState({roomCode: null})
-    } */
-    
-    //<Route path='/room/:roomCode' element={<Room clearRoomCodeCallback={clearRoomCode} />} />
-
-    /* fetch('/api/get-room?code='+roomCode)
-    .then((response) => response.json())
-    .then((data) => {
-        setVotesToSkip(data.votes_to_skip);
-        setGuestCanPause(data.guest_can_pause);
-        setIsHost(data.is_host);
-        
-    }); */
 
     React.useEffect(() => {
         fetch('/api/get-room?code='+roomCode)
             .then(response => {
                 if (!response.ok) {
-                    this.props.leaveRoomCallback(); // clears roomCode state in HomePage
+                    props.clearRoomCodeCallback; // clears roomCode state in HomePage
                     navigate("/");
                 } else {
                     return response.json();
                 }
             })
-            .then(data => {
-                setState({
-                    votesToSkip: data.votes_to_skip,
-                    guestCanPause: data.guest_can_pause,
-                    isHost: data.is_host,
-                });
+            .then((data) => {
+                setVotesToSkip(data.votes_to_skip);
+                setGuestCanPause(data.guest_can_pause);
+                setIsHost(data.is_host);
             });
-    }, []);
+        });
 
     const leaveButtonPressed = () => {
         const requestOptions = {
@@ -53,12 +41,57 @@ export default function Room() {
         };
         fetch(`/api/leave-room`, requestOptions)
             .then(_response => {
-                this.props.leaveRoomCallback(); // clears roomCode state in HomePage
+                props.clearRoomCodeCallback; // clears roomCode state in HomePage
                 navigate("/");
             });
     }
+
+    const updateShowSettings = (value) =>{
+        setShowSettings(value);
+    }
+
+    const renderSettings = () => {
+        return (
+          <Grid container spacing={1}>
+            <Grid item xs={12} align="center">
+              <CreateRoomPage update={true}
+                votesToSkip={votesToSkip}
+                guestCanPause={guestCanPause}
+                roomCode={roomCode}
+                updateCallback={null}
+              />
+            </Grid>
+            <Grid item xs={12} align="center">
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => updateShowSettings(false)}
+              >
+                Close
+              </Button>
+            </Grid>
+          </Grid>
+        );
+    }
+
+    const renderSettingsButton = () => {
+        return(
+            <Grid item xs={12} align="center">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => updateShowSettings(true)}
+              >
+                Settings
+              </Button>
+            </Grid>
+        );
+    }
        
 
+    if(showSettings){
+        return renderSettings()
+    }
     return <Grid container spacing={1}>
         <Grid item xs={12} align="center">
             <Typography variant="h4" component="h4">
@@ -80,6 +113,7 @@ export default function Room() {
                 Host: {String(isHost)}
             </Typography>
         </Grid>
+        {isHost ? renderSettingsButton() : null}
         <Grid item xs={12} align="center">
             <Button variant="contained" color="secondary" onClick={leaveButtonPressed}>
                 Leave Room
@@ -95,3 +129,13 @@ export default function Room() {
             <p>Guest Can Pause: {String(guestCanPause)}</p>
             <p>Host: {String(isHost)}</p>
         </div> */
+        
+        
+        /* fetch('/api/get-room?code='+roomCode)
+    .then((response) => response.json())
+    .then((data) => {
+        setVotesToSkip(data.votes_to_skip);
+        setGuestCanPause(data.guest_can_pause);
+        setIsHost(data.is_host);
+        
+    }); */
