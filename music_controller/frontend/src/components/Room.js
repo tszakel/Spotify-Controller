@@ -41,7 +41,7 @@ export default function Room() {
         };
         fetch(`/api/leave-room`, requestOptions)
             .then(_response => {
-                props.clearRoomCodeCallback; // clears roomCode state in HomePage
+                props.clearRoomCodeCallback; 
                 navigate("/");
             });
     }
